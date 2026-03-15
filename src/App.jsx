@@ -1,4 +1,4 @@
-import {  useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const STYLES = [
   { id: "story", label: "Storytelling", desc: "Une histoire personnelle qui captive" },
