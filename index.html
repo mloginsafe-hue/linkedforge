@@ -1,14 +1,199 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LinkedForge — Générateur de posts LinkedIn IA</title>
-    <meta name="description" content="Génère des posts LinkedIn viraux en 30 secondes grâce à l'IA." />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LinkedForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0d0d0d;--paper:#f5f0e8;--cream:#ede8dc;--gold:#c9a84c;--muted:#7a7468;--border:#d4cfc4;--white:#fff}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+.app{max-width:760px;margin:0 auto;padding:0 20px 80px}
+header{display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;border-bottom:1.5px solid var(--border);margin-bottom:36px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:36px;height:36px;background:var(--ink);border-radius:10px;display:grid;place-items:center;font-family:'Syne',sans-serif;font-weight:800;color:var(--gold);font-size:17px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:19px}
+.logo-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+.pill{background:var(--ink);color:var(--gold);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:999px}
+.label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;margin-top:20px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:500px){.row{grid-template-columns:1fr}}
+input{width:100%;padding:13px 15px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);outline:none}
+input:focus{border-color:var(--gold)}
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.style-card{padding:13px 15px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;background:var(--white)}
+.style-card.sel{border-color:var(--gold);background:#fefaf1}
+.style-card b{display:block;font-size:13px;margin-bottom:3px}
+.style-card small{font-size:12px;color:var(--muted)}
+.tones{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;margin-bottom:28px}
+.tone{padding:7px 15px;border-radius:999px;border:1.5px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);font-family:'DM Sans',sans-serif}
+.tone.sel{background:var(--ink);color:var(--gold);border-color:var(--ink)}
+.btn{width:100%;padding:17px;border-radius:14px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:var(--ink);color:var(--gold);margin-top:4px}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.result{margin-top:32px;background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden}
+.result-top{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--border);background:var(--cream)}
+.result-label{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.copy-btn{padding:7px 15px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;background:var(--white)}
+.result-body{padding:22px;font-size:15px;line-height:1.75;white-space:pre-wrap}
+.spinner-box{margin-top:32px;padding:40px;text-align:center;background:var(--white);border:1.5px solid var(--border);border-radius:16px;display:none}
+.spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.api-box{background:var(--white);border:1.5px solid var(--gold);border-radius:16px;padding:24px;margin-bottom:32px}
+.api-box h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:8px}
+.api-box p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.api-row{display:flex;gap:10px}
+.api-row input{flex:1}
+.api-btn{padding:13px 20px;border-radius:12px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;background:var(--gold);color:var(--ink);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">L</div>
+      <div>
+        <div class="logo-text">LinkedForge</div>
+        <div class="logo-sub">Générateur IA</div>
+      </div>
+    </div>
+    <div class="pill" id="pill">3 posts gratuits</div>
+  </header>
+
+  <div class="api-box" id="apiBox">
+    <h3>🔑 Entre ta clé API Anthropic</h3>
+    <p>Pour générer des posts, tu as besoin d'une clé API gratuite sur console.anthropic.com. Elle est stockée uniquement sur ton appareil.</p>
+    <div class="api-row">
+      <input type="password" id="apiInput" placeholder="sk-ant-..."/>
+      <button class="api-btn" onclick="saveKey()">Sauvegarder</button>
+    </div>
+  </div>
+
+  <div id="mainApp" style="display:none">
+    <div class="row">
+      <div><label class="label">Ton métier</label><input id="metier" placeholder="ex: Coach business..."/></div>
+      <div><label class="label">Ton sujet</label><input id="sujet" placeholder="ex: Quitter son CDI..."/></div>
+    </div>
+
+    <label class="label">Style du post</label>
+    <div class="style-grid" id="styles">
+      <div class="style-card sel" data-style="Storytelling"><b>Storytelling</b><small>Une histoire qui captive</small></div>
+      <div class="style-card" data-style="Liste"><b>Liste à valeur</b><small>X conseils / X erreurs</small></div>
+      <div class="style-card" data-style="Opinion"><b>Opinion forte</b><small>Un avis qui crée le débat</small></div>
+      <div class="style-card" data-style="Carrousel"><b>Carrousel</b><small>Structure slide par slide</small></div>
+    </div>
+
+    <label class="label">Ton</label>
+    <div class="tones" id="tones">
+      <div class="tone sel" data-tone="Inspirant">Inspirant</div>
+      <div class="tone" data-tone="Professionnel">Professionnel</div>
+      <div class="tone" data-tone="Educatif">Éducatif</div>
+      <div class="tone" data-tone="Provocateur">Provocateur</div>
+      <div class="tone" data-tone="Authentique">Authentique</div>
+    </div>
+
+    <button class="btn" id="genBtn" onclick="generate()">✨ Générer mon post LinkedIn</button>
+  </div>
+
+  <div class="spinner-box" id="spinnerBox">
+    <div class="spinner"></div>
+    <div style="font-family:'Syne',sans-serif;font-size:14px;color:var(--muted);font-weight:600">L'IA rédige ton post...</div>
+  </div>
+
+  <div class="result" id="result" style="display:none">
+    <div class="result-top">
+      <div class="result-label">✅ Post généré</div>
+      <button class="copy-btn" onclick="copy()">📋 Copier</button>
+    </div>
+    <div class="result-body" id="resultBody"></div>
+  </div>
+</div>
+
+<script>
+var count = 0;
+var FREE = 3;
+var currentStyle = 'Storytelling';
+var currentTone = 'Inspirant';
+var apiKey = localStorage.getItem('lf_key') || '';
+
+if (apiKey) {
+  document.getElementById('apiBox').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+}
+
+function saveKey() {
+  var k = document.getElementById('apiInput').value.trim();
+  if (!k.startsWith('sk-')) { alert('Clé invalide, elle doit commencer par sk-'); return; }
+  localStorage.setItem('lf_key', k);
+  apiKey = k;
+  document.getElementById('apiBox').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+}
+
+document.getElementById('styles').addEventListener('click', function(e) {
+  var card = e.target.closest('.style-card');
+  if (!card) return;
+  document.querySelectorAll('.style-card').forEach(function(c){ c.classList.remove('sel'); });
+  card.classList.add('sel');
+  currentStyle = card.dataset.style;
+});
+
+document.getElementById('tones').addEventListener('click', function(e) {
+  var t = e.target.closest('.tone');
+  if (!t) return;
+  document.querySelectorAll('.tone').forEach(function(x){ x.classList.remove('sel'); });
+  t.classList.add('sel');
+  currentTone = t.dataset.tone;
+});
+
+async function generate() {
+  var metier = document.getElementById('metier').value.trim();
+  var sujet = document.getElementById('sujet').value.trim();
+  if (!metier || !sujet) { alert('Remplis les deux champs !'); return; }
+  if (count >= FREE) { alert('Limite gratuite atteinte !'); return; }
+
+  document.getElementById('spinnerBox').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('genBtn').disabled = true;
+
+  var prompt = 'Tu es un expert LinkedIn avec 500k abonnes. Genere un post LinkedIn viral en francais.\n\nMetier : ' + metier + '\nSujet : ' + sujet + '\nStyle : ' + currentStyle + '\nTon : ' + currentTone + '\n\nRegles : accroche choc en 1 ligne, retours a la ligne frequents, emojis strategiques, CTA engageant, 150-280 mots. Ecris UNIQUEMENT le post.';
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await res.json();
+    var text = data.content && data.content[0] ? data.content[0].text : 'Erreur.';
+    document.getElementById('resultBody').textContent = text;
+    document.getElementById('result').style.display = 'block';
+    count++;
+    var left = FREE - count;
+    document.getElementById('pill').textContent = left > 0 ? left + ' post' + (left > 1 ? 's' : '') + ' gratuit' + (left > 1 ? 's' : '') : 'Passe Pro';
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  }
+
+  document.getElementById('spinnerBox').style.display = 'none';
+  document.getElementById('genBtn').disabled = false;
+}
+
+function copy() {
+  var text = document.getElementById('resultBody').textContent;
+  navigator.clipboard.writeText(text).then(function(){ alert('Copie !'); });
+}
+</script>
+</body>
 </html>
+
 
